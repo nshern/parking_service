@@ -3,8 +3,36 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, Integer, String
 import os
 from flask_marshmallow import Marshmallow
+from datetime import datetime
+import requests
 
-# from motor_api_service import get_info
+
+def get_response(registration_number):
+    url = "https://v1.motorapi.dk/vehicles"
+
+    headers = {
+        "X-AUTH-TOKEN": os.environ["MOTOR_API_SERVICE"],
+    }
+    params = {"registration_number": registration_number}
+
+    try:
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"An error occured: {e}")
+        return None
+
+    return response
+
+
+def get_info(registration_number):
+    r = get_response(registration_number)
+    if r is not None:
+        return {
+            "make": r.json()[0]["make"],
+            "model": r.json()[0]["model"],
+            "variant": r.json()[0]["variant"],
+        }
 
 
 app = Flask(__name__)
@@ -35,8 +63,11 @@ def db_drop():
 def db_seed():
     first_parking = ParkingSpace(  # type: ignore
         registration_number="DM24392",
-        time="16:44",
+        time="2023-10-17T14:14:45.023502",
         email="example@example.com",
+        make="test",
+        model="test",
+        variant="test",
     )
 
     db.session.add(first_parking)
@@ -50,11 +81,22 @@ class ParkingSpace(db.Model):
     registration_number = Column(String)
     time = Column(String)
     email = Column(String)
+    make = Column(String)
+    model = Column(String)
+    variant = Column(String)
 
 
 class ParkingSpaceSchema(ma.Schema):
     class Meta:
-        fields = ("id", "registration_number", "time", "email")
+        fields = (
+            "id",
+            "registration_number",
+            "time",
+            "email",
+            "make",
+            "model",
+            "variant",
+        )
 
 
 parking_schema = ParkingSpaceSchema()
@@ -76,18 +118,22 @@ def parkings():
 @app.route("/register_parking", methods=["POST"])  # type: ignore
 def register_parking():
     registration_number = request.form["registration_number"]
-    test = ParkingSpace.query.filter_by(
-        registration_number=registration_number
-    ).first()
-    if test:
-        return jsonify("There is already a registration by that name")
-    else:
-        time = request.form["time"]
-        email = request.form["email"]
+    time = datetime.now().isoformat()
+    email = request.form["email"]
+    if registration_number is not None:
+        info = get_info(registration_number)
+        make = info["make"]
+        model = info["model"]
+        variant = info["variant"]
 
-        new_parking = ParkingSpace(  # type: ignore
-            registration_number=registration_number, time=time, email=email
-        )
-        db.session.add(new_parking)
-        db.session.commit()
-        return jsonify(message="You added a new parking"), 201
+    new_parking = ParkingSpace(  # type: ignore
+        registration_number=registration_number,
+        time=time,
+        email=email,
+        make=make,
+        model=model,
+        variant=variant,
+    )
+    db.session.add(new_parking)
+    db.session.commit()
+    return jsonify(message="You added a new parking"), 201
