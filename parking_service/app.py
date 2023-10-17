@@ -4,35 +4,8 @@ from sqlalchemy import Column, Integer, String
 import os
 from flask_marshmallow import Marshmallow
 from datetime import datetime
-import requests
-
-
-def get_response(registration_number):
-    url = "https://v1.motorapi.dk/vehicles"
-
-    headers = {
-        "X-AUTH-TOKEN": os.environ["MOTOR_API_SERVICE"],
-    }
-    params = {"registration_number": registration_number}
-
-    try:
-        response = requests.get(url, headers=headers, params=params)
-        response.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        print(f"An error occured: {e}")
-        return None
-
-    return response
-
-
-def get_info(registration_number):
-    r = get_response(registration_number)
-    if r is not None:
-        return {
-            "make": r.json()[0]["make"],
-            "model": r.json()[0]["model"],
-            "variant": r.json()[0]["variant"],
-        }
+from .motor_api_service import get_info
+from flask_mail import Mail, Message
 
 
 app = Flask(__name__)
@@ -45,6 +18,16 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
 
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
+
+# Mail configuration
+mail = Mail(app)
+app.config["MAIL_SERVER"] = "smtp.gmail.com"
+app.config["MAIL_PORT"] = 465
+app.config["MAIL_USERNAME"] = "smartlearning.parkingservice@gmail.com"
+app.config["MAIL_PASSWORD"] = os.environ.get("SMARTLEARNING_MAIL")
+app.config["MAIL_USE_TLS"] = False
+app.config["MAIL_USE_SSL"] = True
+mail = Mail(app)
 
 
 @app.cli.command("db_create")
@@ -120,21 +103,33 @@ def register_parking():
     registration_number = request.form["registration_number"]
     time = datetime.now().isoformat()
     email = request.form["email"]
-    if registration_number is not None:
-        info = get_info(registration_number)
-        if info is not None:
-            make = info["make"]
-            model = info["model"]
-            variant = info["variant"]
+    # if registration_number is not None:
+    #     info = get_info(registration_number)
+    # if info is not None:
+    #     make = info["make"]
+    #     model = info["model"]
+    #     variant = info["variant"]
 
     new_parking = ParkingSpace(  # type: ignore
         registration_number=registration_number,
         time=time,
         email=email,
-        make=make,
-        model=model,
-        variant=variant,
+        make="test",
+        model="test",
+        variant="test",
     )
     db.session.add(new_parking)
     db.session.commit()
-    return jsonify(message="You added a new parking"), 201
+
+    # Send email receipt
+    msg = Message(
+        "Hello",
+        sender="smartlearning.parkingservice@gmail.com",
+        recipients=["nashern@protonmail.com"],
+    )
+    msg.body = "Hello Flask message sent from Flask-Mail"
+    mail.send(msg)
+    return (
+        jsonify(message="You added a new parking. Receipt send to email"),
+        201,
+    )

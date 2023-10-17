@@ -221,6 +221,20 @@ async = ["asgiref (>=3.2)"]
 dotenv = ["python-dotenv"]
 
 [[package]]
+name = "flask-mail"
+version = "0.9.1"
+description = "Flask extension for sending email"
+optional = false
+python-versions = "*"
+files = [
+    {file = "Flask-Mail-0.9.1.tar.gz", hash = "sha256:22e5eb9a940bf407bcf30410ecc3708f3c56cc44b29c34e1726fe85006935f41"},
+]
+
+[package.dependencies]
+blinker = "*"
+Flask = "*"
+
+[[package]]
 name = "flask-marshmallow"
 version = "0.15.0"
 description = "Flask + marshmallow for beautiful APIs"
@@ -1464,4 +1478,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "f07d4ca38addbd72a1f816f56ad5aa251d4a0cbf3b051b6cece0b3612f879237"
+content-hash = "f79b2512f81ad1211a5971a06e9d5def7d4b06f0d131bc99e4064d66edb7d9a9"
