@@ -122,9 +122,10 @@ def register_parking():
     email = request.form["email"]
     if registration_number is not None:
         info = get_info(registration_number)
-        make = info["make"]
-        model = info["model"]
-        variant = info["variant"]
+        if info is not None:
+            make = info["make"]
+            model = info["model"]
+            variant = info["variant"]
 
     new_parking = ParkingSpace(  # type: ignore
         registration_number=registration_number,
