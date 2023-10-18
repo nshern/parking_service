@@ -103,20 +103,31 @@ def register_parking():
     registration_number = request.form["registration_number"]
     time = datetime.now().isoformat()
     email = request.form["email"]
-    # if registration_number is not None:
-    #     info = get_info(registration_number)
-    # if info is not None:
-    #     make = info["make"]
-    #     model = info["model"]
-    #     variant = info["variant"]
+
+    # info, make, model, variant = ""
+    info = ""
+    make = ""
+    model = ""
+    variant = ""
+
+    if registration_number is not None:
+        info = get_info(registration_number)
+        print(info)
+    if info != "" and type(info) == dict:
+        if "make" in info:
+            make = info["make"]
+        if "model" in info:
+            model = info["model"]
+        if "variant" in info:
+            variant = info["variant"]
 
     new_parking = ParkingSpace(  # type: ignore
         registration_number=registration_number,
         time=time,
         email=email,
-        make="test",
-        model="test",
-        variant="test",
+        make=make,
+        model=model,
+        variant=variant,
     )
     db.session.add(new_parking)
     db.session.commit()
