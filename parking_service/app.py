@@ -141,6 +141,6 @@ def register_parking():
     msg.body = "Hello Flask message sent from Flask-Mail"
     mail.send(msg)
     return (
-        jsonify(message="You added a new parking. Receipt send to email"),
+        jsonify(message="You added a new parking. Receipt sent to email"),
         201,
     )
