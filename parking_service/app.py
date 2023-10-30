@@ -1,12 +1,13 @@
+import os
+from datetime import datetime
+
 from flask import Flask, jsonify, request
+from flask_mail import Mail, Message
+from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, Integer, String
-import os
-from flask_marshmallow import Marshmallow
-from datetime import datetime
-from .motor_api_service import get_info
-from flask_mail import Mail, Message
 
+from .motor_api_service import get_info
 
 app = Flask(__name__)
 
