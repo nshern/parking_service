@@ -1,2 +1,3 @@
 parking_service/__pycache__
 .DS_Store
+parking_service/parking.log
