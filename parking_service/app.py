@@ -1,3 +1,4 @@
+import logging
 import os
 from datetime import datetime
 
@@ -8,6 +9,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, Integer, String
 
 from .motor_api_service import get_info
+
+logging.basicConfig(filename="parking.log", level=logging.INFO)
 
 app = Flask(__name__)
 
@@ -132,6 +135,8 @@ def register_parking():
     )
     db.session.add(new_parking)
     db.session.commit()
+
+    logging.info(f"New parking registed: {new_parking.id}")
 
     # Send email receipt
     msg = Message(
